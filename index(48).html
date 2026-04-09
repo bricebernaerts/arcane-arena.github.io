@@ -1,0 +1,52 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arcane Arena</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h1>Arcane Arena</h1>
+  <div id="status-top" class="status-bar"></div> <!-- Top bar -->
+  <div id="blue-deploy-banner" style="display:none; justify-content: start; gap: 8px; margin-bottom:8px;"></div>
+  
+  <div id="board-container" style="display: flex; gap: 6px; position: relative;">
+  
+    <!-- Left row labels -->
+    <div id="row-labels" style="display: flex; flex-direction: column; gap: 4px; margin-top: 54px;">
+      <!-- Row numbers 1-18 inserted by script -->
+    </div>
+  
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <!-- Top column labels -->
+      <div id="col-labels-top" style="display: grid; grid-template-columns: repeat(9, 50px); gap: 4px; margin-left: 2px;"></div>
+  
+      <!-- Gameboard and sidebar container -->
+      <div style="display: flex; gap: 12px;align-items: center;">
+  
+        <div id="gameboard"></div>
+  
+        <div id="sidebar">
+          <div id="round-counter" style="font-size: 1.5rem; font-weight: bold; color: black; margin-bottom: 12px;">
+            Round 0
+          </div>
+          <button id="skipDeploy">Skip</button>
+        </div>
+      </div>
+  
+      <!-- Bottom column labels -->
+      <div id="col-labels-bottom" style="display: grid; grid-template-columns: repeat(9, 50px); gap: 4px; margin-left: 2px;"></div>
+    </div>
+    
+    <div id="turn-summary"></div>
+  
+  </div>
+
+
+  <div id="status-bottom" class="status-bar"></div> <!-- Bottom bar -->
+  <div id="red-deploy-banner" style="display:none; justify-content: start; gap: 8px; margin-bottom:8px;"></div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
