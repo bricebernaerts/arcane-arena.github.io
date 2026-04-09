@@ -16,12 +16,12 @@ const blueDeployBanner = document.getElementById('blue-deploy-banner');
 
 const deployableClasses = {
   Skeleton: 100,
+  Orc: 150,
+  Djendri: 150,
   Kobold: 200,
-  Orc: 200,
   Human: 200,
   Naga: 200,
   Gnoll: 200,
-  Djendri: 200,
   Furbolg: 300,
   Cavalry: 300,
   Wyvern: 400,
@@ -419,6 +419,7 @@ function highlightValidMovesByClass(pos, playerClass, tokenColor) {
       const nr = pos.r + actualDr;
       const nc = pos.c + dc;
       if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
+
       const btn = buttons[nr * cols + nc];
       if (!btn.querySelector('.token')) {
         btn.classList.add('highlight');
@@ -429,6 +430,24 @@ function highlightValidMovesByClass(pos, playerClass, tokenColor) {
     const nr = pos.r + actualDr;
     const nc = pos.c + dc;
     if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
+
+    // New: Check intermediate squares for multi-step moves
+    const stepCount = Math.max(Math.abs(actualDr), Math.abs(dc));
+    let pathBlocked = false;
+    if (stepCount > 1) {
+      const stepR = actualDr / stepCount;
+      const stepC = dc / stepCount;
+      for (let step = 1; step < stepCount; step++) {
+        const interR = pos.r + step * stepR;
+        const interC = pos.c + step * stepC;
+        const intermediateBtn = buttons[interR * cols + interC];
+        if (intermediateBtn.querySelector('.token')) {
+          pathBlocked = true;
+          break;
+        }
+      }
+    }
+    if (pathBlocked) return;
 
     const btn = buttons[nr * cols + nc];
     if (!btn.querySelector('.token')) {
