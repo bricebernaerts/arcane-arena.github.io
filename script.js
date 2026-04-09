@@ -4,10 +4,12 @@ const cols = 9;
 
 const statusTop = document.getElementById('status-top');
 const statusBottom = document.getElementById('status-bottom');
-let manaRed = 500;
-let manaBlue = 500;
+let manaRed = 1000;
+let manaBlue = 1000;
 let incomeRed = 10;
 let incomeBlue = 10;
+
+let gameOver = false;
 
 const redDeployBanner = document.getElementById('red-deploy-banner');
 const blueDeployBanner = document.getElementById('blue-deploy-banner');
@@ -44,6 +46,46 @@ let summaryTimeout = null;
 let phase = 'move'; // 'move' or 'deploy'
 
 const skipDeployBtn = document.getElementById('skipDeploy');
+
+
+// --- Row & Column labels code unchanged ---
+const rowLabelsContainer = document.getElementById('row-labels');
+for (let r = 1; r <= rows; r++) {
+  const label = document.createElement('div');
+  label.textContent = r;
+  label.style.height = '50px';         // match grid row height
+  label.style.lineHeight = '50px';     // vertical center text in div
+  label.style.fontWeight = 'bold';
+  label.style.fontSize = '1.1rem';
+  label.style.color = '#333';
+  label.style.userSelect = 'none';
+  label.style.textAlign = 'center';    // horizontally center number
+  rowLabelsContainer.appendChild(label);
+}
+
+const colLabelsTop = document.getElementById('col-labels-top');
+const colLabelsBottom = document.getElementById('col-labels-bottom');
+const letters = 'ABCDEFGHI';
+
+for (let i = 0; i < cols; i++) {
+  const labelTop = document.createElement('div');
+  labelTop.textContent = letters[i];
+  labelTop.style.fontWeight = 'bold';
+  labelTop.style.fontSize = '1.1rem';
+  labelTop.style.color = '#333';
+  labelTop.style.userSelect = 'none';
+  labelTop.style.textAlign = 'center';
+  colLabelsTop.appendChild(labelTop);
+
+  const labelBottom = document.createElement('div');
+  labelBottom.textContent = letters[i];
+  labelBottom.style.fontWeight = 'bold';
+  labelBottom.style.fontSize = '1.1rem';
+  labelBottom.style.color = '#333';
+  labelBottom.style.userSelect = 'none';
+  labelBottom.style.textAlign = 'center';
+  colLabelsBottom.appendChild(labelBottom);
+}
 
 // ----------------- TOKEN CLASSES & MOVEMENTS -----------------
 // Movement vectors from Red's perspective; blue rows reversed
@@ -205,6 +247,7 @@ function createDeployButton(playerColor) {
     btn.disabled = mana < cost;
 
     btn.addEventListener('click', () => {
+      if (gameOver) return;
       deployToken(playerColor, cls, cost);
     });
 
@@ -390,6 +433,102 @@ function highlightValidMovesByClass(pos, playerClass, tokenColor) {
   });
 }
 
+function checkArcanistStatus() {
+  const arcanists = { red: false, blue: false };
+  buttons.forEach(btn => {
+    const token = btn.querySelector('.token');
+    if (token && token.dataset.playerClass === 'Arcanist') {
+      if (token.style.backgroundColor === 'crimson') arcanists.red = true;
+      else if (token.style.backgroundColor === 'blue') arcanists.blue = true;
+    }
+  });
+
+  if (!arcanists.red) {
+    gameOver = true;
+    showGameOverNotification("You have Lost!");
+  }
+  if (!arcanists.blue) {
+    gameOver = true;
+    showGameOverNotification("You Have Won!");
+  }
+}
+
+function resetGame() {
+  // Clear flags
+  gameOver = false;
+  tokenSelected = false;
+  selectedToken = null;
+  moveCount = 0;
+  manaRed = 1000;
+  manaBlue = 1000;
+  incomeRed = 10;
+  incomeBlue = 10;
+  phase = 'move';
+
+  roundCounter.textContent = `Round 0`;
+  turnSummary.style.opacity = '0';
+  turnSummary.innerHTML = '';
+
+  // Clear all tokens from board
+  buttons.forEach(btn => {
+    while (btn.firstChild) {
+      btn.removeChild(btn.firstChild);
+    }
+    btn.classList.remove('captured-red', 'captured-blue', 'highlight', 'highlight-occupied', 'highlight-hover', 'highlight-hover-occupied');
+    btn.capturedBy = null;
+    btn.incomeLabel = null;
+  });
+
+  // Reset income, sanctums and base tokens
+  const bottomRef = { r: rows - 2, c: Math.floor(cols / 2) };
+  const topRef = { r: 1, c: Math.floor(cols / 2) };
+
+  const bottomBtn = buttons[bottomRef.r * cols + bottomRef.c];
+  bottomBtn.capturedBy = 'red';
+  bottomBtn.classList.add('captured-red');
+
+  const topBtn = buttons[topRef.r * cols + topRef.c];
+  topBtn.capturedBy = 'blue';
+  topBtn.classList.add('captured-blue');
+
+  // Add starting Arcanist tokens
+  tokenPos1 = { r: bottomRef.r, c: bottomRef.c };
+  tokenPos2 = { r: topRef.r, c: topRef.c };
+
+  bottomBtn.appendChild(createToken('crimson', 'Arcanist', 'Red Arcanist Token'));
+  topBtn.appendChild(createToken('blue', 'Arcanist', 'Blue Arcanist Token'));
+
+  calculateIncome();
+  updateStatusBars();
+  updateSkipButton();
+  renderDeployBanners();
+}
+
+function showGameOverNotification(message) {
+  turnSummary.style.opacity = '1';
+  turnSummary.style.color = 'black';
+  turnSummary.style.textAlign = 'center';
+  turnSummary.innerHTML = `<div>${message}</div><button id="restartBtn" style="
+    margin-top:12px;
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    background-color: #3399ff;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  ">Restart?</button>`;
+  
+  clearTimeout(summaryTimeout);
+
+  const restartBtn = document.getElementById('restartBtn');
+  restartBtn.addEventListener('click', () => {
+    resetGame();
+  });
+}
+
 function updateSkipButton() {
   skipDeployBtn.disabled = (phase === 'move');
   skipDeployBtn.style.opacity = skipDeployBtn.disabled ? 0.5 : 1;
@@ -397,6 +536,7 @@ function updateSkipButton() {
 
 function showTurnSummary(roundNum, playerColor, deployed, incomeGained, tokenClass = '') {
   clearTimeout(summaryTimeout);
+  if (gameOver) return;
   const color = playerColor === 'crimson' ? 'crimson' : 'dodgerblue';
   const deployText = deployed ? `Deployed: ${tokenClass}` : 'Deployment Skipped';
   turnSummary.style.color = color;
@@ -484,6 +624,7 @@ function createToken(color, playerClass, title) {
   });
 
   token.addEventListener('click', (e) => {
+    if (gameOver) return;
     e.stopPropagation();
 
     if (phase !== 'move') return;
@@ -524,10 +665,16 @@ function deployToken(playerColor, tokenClass, cost) {
   const sanctum = sanctumPosition(playerColor);
   const sanctumBtn = buttons[sanctum.r * cols + sanctum.c];
 
+  // Check if sanctum is occupied or controlled by enemy
   if (sanctumBtn.querySelector('.token')) {
     alert('Sanctum already occupied. Cannot deploy token.');
     return;
   }
+  if (sanctumBtn.capturedBy && sanctumBtn.capturedBy !== playerColor) {
+    alert('Sanctum is controlled by the enemy. Cannot deploy token.');
+    return;
+  }
+
   const mana = playerColor === 'red' ? manaRed : manaBlue;
   if (mana < cost) {
     alert('Not enough mana to deploy token.');
@@ -600,6 +747,7 @@ for (let r = 0; r < rows; r++) {
     btn.appendChild(incomeLabel);
 
   btn.addEventListener('click', () => {
+    if (gameOver) return;
     if (phase === 'move') {
       if (tokenSelected && selectedToken) {
         if (selectedToken.elem.style.backgroundColor !== currentColor()) {
@@ -640,6 +788,7 @@ for (let r = 0; r < rows; r++) {
         const existingToken = btn.querySelector('.token');
         if (existingToken && existingToken !== selectedToken.elem) {
           existingToken.remove();
+          checkArcanistStatus();
         }
   
         if (selectedToken.elem.parentElement) {
@@ -726,6 +875,7 @@ updateStatusBars();
 updateSkipButton();
 
 skipDeployBtn.addEventListener('click', () => {
+  if (gameOver) return;
   if (phase === 'deploy') {
     const player = currentPlayer();
 
