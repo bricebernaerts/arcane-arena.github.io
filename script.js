@@ -1,11 +1,11 @@
 const gameboard = document.getElementById('gameboard');
-const rows = 18;
+const rows = 16;
 const cols = 9;
 
 const statusTop = document.getElementById('status-top');
 const statusBottom = document.getElementById('status-bottom');
-let manaRed = 1000;
-let manaBlue = 1000;
+let manaRed = 500;
+let manaBlue = 500;
 let incomeRed = 10;
 let incomeBlue = 10;
 
@@ -28,7 +28,28 @@ const deployableClasses = {
   Griffon: 400,
   Pegasus: 450,
   Dragon: 800,
-  Kathryn: 999
+  Mona: 900,
+  Lang: 1000,
+  Kathryn: 1500
+};
+
+const deployableImages = {
+  Skeleton: 'https://your-image-url/skeleton.png',
+  Kobold: 'https://uploads.onecompiler.io/44fwt7xkt/44jve29d5/Arcane_card.png',
+  Orc: 'https://your-image-url/orc.png',
+  Human: 'https://your-image-url/human.png',
+  Naga: 'https://your-image-url/naga.png',
+  Gnoll: 'https://your-image-url/gnoll.png',
+  Djendri: 'https://your-image-url/djendri.png',
+  Furbolg: 'https://your-image-url/furbolg.png',
+  Cavalry: 'https://your-image-url/cavalry.png',
+  Wyvern: 'https://your-image-url/wyvern.png',
+  Griffon: 'https://your-image-url/griffon.png',
+  Pegasus: 'https://your-image-url/pegasus.png',
+  Dragon: 'https://your-image-url/dragon.png',
+  Mona: 'https://your-image-url/dragon.png',
+  Lang: 'https://your-image-url/dragon.png',
+  Kathryn: 'https://your-image-url/kathryn.png'
 };
 
 let tokenSelected = false;
@@ -46,17 +67,18 @@ let summaryTimeout = null;
 let phase = 'move'; // 'move' or 'deploy'
 
 const skipDeployBtn = document.getElementById('skipDeploy');
-
+const deployImagePopup = document.getElementById('deploy-image-popup');
+const deployImagePopupImg = document.getElementById('deploy-image-popup-img');
 
 // --- Row & Column labels code unchanged ---
 const rowLabelsContainer = document.getElementById('row-labels');
 for (let r = 1; r <= rows; r++) {
   const label = document.createElement('div');
   label.textContent = r;
-  label.style.height = '50px';         // match grid row height
-  label.style.lineHeight = '50px';     // vertical center text in div
+  label.style.height = '40px';         // match grid row height
+  label.style.lineHeight = '40px';     // vertical center text in div
   label.style.fontWeight = 'bold';
-  label.style.fontSize = '1.1rem';
+  label.style.fontSize = '1.0rem';
   label.style.color = '#333';
   label.style.userSelect = 'none';
   label.style.textAlign = 'center';    // horizontally center number
@@ -71,7 +93,7 @@ for (let i = 0; i < cols; i++) {
   const labelTop = document.createElement('div');
   labelTop.textContent = letters[i];
   labelTop.style.fontWeight = 'bold';
-  labelTop.style.fontSize = '1.1rem';
+  labelTop.style.fontSize = '1.0rem';
   labelTop.style.color = '#333';
   labelTop.style.userSelect = 'none';
   labelTop.style.textAlign = 'center';
@@ -80,7 +102,7 @@ for (let i = 0; i < cols; i++) {
   const labelBottom = document.createElement('div');
   labelBottom.textContent = letters[i];
   labelBottom.style.fontWeight = 'bold';
-  labelBottom.style.fontSize = '1.1rem';
+  labelBottom.style.fontSize = '1.0rem';
   labelBottom.style.color = '#333';
   labelBottom.style.userSelect = 'none';
   labelBottom.style.textAlign = 'center';
@@ -127,7 +149,7 @@ const tokenClasses = {
     ]
   },
   Gnoll: {
-    label: 'L',
+    label: 'G',
     moves: [
       [-2, 2], [-2, -2]
     ],
@@ -178,7 +200,7 @@ const tokenClasses = {
     flying: true
   },
   Griffon: {
-    label: 'G',
+    label: 'R',
     moves: [
       [-2, -2], [-2, 2],
       [2, -2], [2, 2]
@@ -206,10 +228,26 @@ const tokenClasses = {
     ],
     flying: true
   },
+  Lang: {
+    label: 'L',
+    moves: [
+      [-1, 0], [1, 0], [0, -1], [0, 1]
+    ],
+    unlimited: true
+  },
+  Mona: {
+    label: 'M',
+    moves: [
+      [-1, -1], [-1, 1], [1, -1], [1, 1]
+    ],
+    unlimited: true
+  },
   Kathryn: {
     label: 'Q',
     moves: [
-      [-1, 0], [1, 0], [0, -1], [0, 1]
+      [-1, -1], [-1, 0], [-1, 1],
+      [0, -1],           [0, 1],
+      [1, -1],  [1, 0],  [1, 1]
     ],
     unlimited: true
   }
@@ -237,6 +275,9 @@ function sanctumPosition(player) {
 function createDeployButton(playerColor) {
   const container = document.createDocumentFragment();
 
+  const deployPreview = document.getElementById('deploy-preview');
+  const deployPreviewImg = document.getElementById('deploy-preview-img');
+
   Object.entries(deployableClasses).forEach(([cls, cost]) => {
     const btn = document.createElement('button');
     btn.innerHTML = `${cls} (${cost}&nbsp;M)`;
@@ -251,6 +292,20 @@ function createDeployButton(playerColor) {
       deployToken(playerColor, cls, cost);
     });
 
+    // Show image on hover
+    btn.addEventListener('mouseover', () => {
+      const imgUrl = deployableImages[cls];
+      if (imgUrl) {
+        deployImagePopupImg.src = imgUrl;
+        deployImagePopup.style.display = 'block';
+      }
+    });
+    
+    btn.addEventListener('mouseout', () => {
+      deployImagePopup.style.display = 'none';
+      deployImagePopupImg.src = '';
+    });
+    
     container.appendChild(btn);
   });
 
@@ -560,9 +615,9 @@ function createToken(color, playerClass, title) {
 
   token.style.color = 'white';
   token.style.fontWeight = 'bold';
-  token.style.fontSize = '1.2rem';
+  token.style.fontSize = '1.0rem';
   token.style.textAlign = 'center';
-  token.style.lineHeight = '22px';
+  token.style.lineHeight = '19px';
   token.style.userSelect = 'none';
 
   token.dataset.playerClass = playerClass;
@@ -713,6 +768,10 @@ function deployToken(playerColor, tokenClass, cost) {
   phase = 'move';
   updateSkipButton();
   renderDeployBanners();
+  
+  deployImagePopup.style.display = 'none';
+  deployImagePopupImg.src = '';
+
 }
 
 // BOARD SETUP
