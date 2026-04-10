@@ -20,16 +20,18 @@ const deployableClasses = {
   Djendri: 150,
   Kobold: 200,
   Human: 200,
-  Naga: 200,
+  Naga: 150,
   Gnoll: 200,
   Furbolg: 300,
   Cavalry: 300,
+  Mortar: 350,
+  Elemental: 400,
   Wyvern: 400,
   Griffon: 400,
   Pegasus: 450,
   Dragon: 800,
-  Mona: 900,
-  Lang: 1000,
+  Lich: 900,
+  Troll: 1000,
   Kathryn: 1500
 };
 
@@ -43,12 +45,14 @@ const deployableImages = {
   Djendri: 'https://your-image-url/djendri.png',
   Furbolg: 'https://your-image-url/furbolg.png',
   Cavalry: 'https://your-image-url/cavalry.png',
+  Elemental: 'https://your-image-url/pegasus.png',
+  Mortar: 'https://your-image-url/cavalry.png',
   Wyvern: 'https://your-image-url/wyvern.png',
   Griffon: 'https://your-image-url/griffon.png',
   Pegasus: 'https://your-image-url/pegasus.png',
   Dragon: 'https://your-image-url/dragon.png',
-  Mona: 'https://your-image-url/dragon.png',
-  Lang: 'https://your-image-url/dragon.png',
+  Lich: 'https://your-image-url/dragon.png',
+  Troll: 'https://your-image-url/dragon.png',
   Kathryn: 'https://your-image-url/kathryn.png'
 };
 
@@ -188,7 +192,34 @@ const tokenClasses = {
   Cavalry: {
     label: 'C',
     moves: [
+      [0, 2], [0, 1], [0, -1], [0, -2],
+      [1, -1], [-1, -1]
+    ],
+    captures: [
       [0, 2], [0, 1], [0, -1], [0, -2]
+    ]
+  },
+  Mortar: {
+    label: 'M',
+    moves: [
+      [-1, 1], [1, 1]
+    ],
+    captures: [  
+      [2, -2], [1, -2], [0, -2], [-1, -2], [-2, -2],
+      [2, -1],                            [-2, -1],
+      [2, 0],                             [-2, 0],
+      [2, 1],                              [-2, 1],
+      [2, 2],  [1, 2],  [0, 2],  [-1, 2], [-2, 2]
+    ]
+  },
+  Elemental: {
+    label: 'E',
+    moves: [
+      [2, 0], [-2, 0],
+      [0, -2], [0, 2]
+    ],
+    captures: [
+      [1, 2], [0, 1], [0, 2], [-1, 2]
     ]
   },
   Wyvern: {
@@ -230,15 +261,15 @@ const tokenClasses = {
     ],
     flying: true
   },
-  Lang: {
-    label: 'L',
+  Troll: {
+    label: 'T',
     moves: [
       [0, 1], [0, -1], [1, 0], [-1, 0]
     ],
     unlimited: true
   },
-  Mona: {
-    label: 'M',
+  Lich: {
+    label: 'L',
     moves: [
       [1, 1], [1, -1], [-1, 1], [-1, -1]
     ],
