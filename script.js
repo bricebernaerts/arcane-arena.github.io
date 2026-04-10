@@ -371,8 +371,8 @@ function renderDeployBanners() {
 }
 
 function updateStatusBars() {
-  statusTop.innerHTML = `<div class="player-red">Mana: ${manaRed} | Mana Regeneration: ${incomeRed}</div>`;
-  statusBottom.innerHTML = `<div class="player-blue">Mana: ${manaBlue} | Mana Regeneration: ${incomeBlue}</div>`;
+  statusTop.innerHTML = `<div>Mana: ${manaRed} | Mana Regeneration: ${incomeRed}</div>`;
+  statusBottom.innerHTML = `<div>Mana: ${manaBlue} | Mana Regeneration: ${incomeBlue}</div>`;
 }
 
 function calculateIncome() {
