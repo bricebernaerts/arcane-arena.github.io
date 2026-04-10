@@ -1,55 +1,132 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Arcane Arena</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Arcane Arena - Homepage</title>
+  <style>
+    @keyframes glow {
+      0%, 100% {
+        text-shadow: 0 0 8px #ff6f00, 0 0 20px #ff6f00;
+      }
+      50% {
+        text-shadow: 0 0 15px #ff9400, 0 0 25px #ff9400;
+      }
+    }
+
+    body {
+      position: relative;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a1a39 0%, #1a2a6c 60%),
+                  linear-gradient(45deg, rgba(255,111,0,0.2), rgba(0,123,255,0.2));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      gap: 30px;
+      color: white;
+      overflow: hidden;
+    }
+
+    /* Decorative arcs behind title */
+    .background-arcs {
+      position: absolute;
+      top: 45px;
+      width: 400px;
+      height: 200px;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(30px);
+    }
+    .arc1 {
+      box-shadow: 0 0 80px 30px #ff6f00;
+      border-radius: 50% / 100%;
+      width: 250px;
+      height: 150px;
+      position: absolute;
+      left: -50px;
+      top: 10px;
+      opacity: 0.25;
+      transform: rotate(15deg);
+    }
+    .arc2 {
+      box-shadow: 0 0 100px 40px #007bff;
+      border-radius: 50% / 100%;
+      width: 280px;
+      height: 170px;
+      position: absolute;
+      right: -100px;
+      top: 10px;
+      opacity: 0.3;
+      transform: rotate(-20deg);
+    }
+
+    h1 {
+      font-size: 5rem;
+      color: #ff6f00;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 0;
+      padding-bottom: 12px;
+      border-bottom: 5px solid #ff6f00;
+      letter-spacing: 0.1em;
+    }
+
+    button {
+      width: 240px;
+      padding: 14px 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      color: white;
+      background-color: #007bff;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.6);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    button:hover {
+      background-color: #ff6f00;
+      transform: scale(1.05);
+      color: white;
+    }
+
+    /* Container for buttons for spacing */
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      z-index: 1;
+    }
+  </style>
 </head>
 <body>
+  <div class="background-arcs">
+    <div class="arc1"></div>
+    <div class="arc2"></div>
+  </div>
+
   <h1>Arcane Arena</h1>
-  <div id="status-top" class="status-bar"></div> <!-- Top bar -->
-  <div id="red-deploy-banner" style="display:none; justify-content: start; gap: 8px; margin-bottom:8px;"></div>
-  
-  <div id="board-container" style="display: flex; gap: 6px; position: relative;">
-  
-    <!-- Left row labels -->
-    <div id="row-labels" style="display: flex; flex-direction: column; gap: 4px; margin-top: 33px;">
-      <!-- Row numbers 1-18 inserted by script -->
-    </div>
-  
-    <div style="display: flex; flex-direction: column; gap: 6px;">
-      <!-- Top column labels -->
-      <div id="col-labels-top" style="display: grid; grid-template-columns: repeat(16, 40px); gap: 4px; margin-left: 5px;"></div>
-  
-      <!-- Gameboard and sidebar container -->
-      <div style="display: flex; gap: 12px;align-items: center;">
-  
-        <div id="gameboard"></div>
-  
-        <div id="sidebar">
-          <div id="round-counter" style="font-size: 1.5rem; font-weight: bold; color: black; margin-bottom: 12px;">
-            Round 0
-          </div>
-          <button id="skipDeploy">Skip</button>
-        </div>
-      </div>
-  
-      <!-- Bottom column labels -->
-      <div id="col-labels-bottom" style="display: grid; grid-template-columns: repeat(16, 40px); gap: 5px; margin-left: 4px;"></div>
-    </div>
-    
-    <div id="turn-summary"></div>
-  
+
+  <div class="button-container">
+    <button id="startJourney">Start Journey</button>
+    <button id="hotseat">Hotseat</button>
+    <button id="versusAI">Versus AI</button>
+    <button id="deckBuilder">Deck Builder</button>
+    <button id="exit">Exit</button>
   </div>
 
-
-  <div id="status-bottom" class="status-bar"></div> <!-- Bottom bar -->
-  <div id="blue-deploy-banner" style="display:none; justify-content: start; gap: 8px; margin-bottom:8px;"></div>
-  <div id="deploy-image-popup">
-    <img id="deploy-image-popup-img" src="" alt="Deploy Preview">
-  </div>
-
-  <script src="script.js"></script>
+  <script>
+    document.getElementById('startJourney').onclick = () => alert('Start Journey mode is not implemented yet.');
+    document.getElementById('hotseat').onclick = () => window.location.href = 'game.html';
+    document.getElementById('versusAI').onclick = () => window.location.href = 'ai-game.html';
+    document.getElementById('deckBuilder').onclick = () => alert('Deck Builder mode is not implemented yet.');
+    document.getElementById('exit').onclick = () => alert('Exit button pressed. Close the tab or browser to exit.');
+  </script>
 </body>
-
 </html>
