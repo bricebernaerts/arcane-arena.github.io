@@ -1,6 +1,6 @@
 const gameboard = document.getElementById('gameboard');
-const rows = 16;
-const cols = 9;
+const rows = 9;
+const cols = 16;
 
 const statusTop = document.getElementById('status-top');
 const statusBottom = document.getElementById('status-bottom');
@@ -53,8 +53,10 @@ const deployableImages = {
 };
 
 let tokenSelected = false;
-let tokenPos1 = { r: rows - 2, c: Math.floor(cols / 2) };   // red token position
-let tokenPos2 = { r: 1, c: Math.floor(cols / 2) };           // blue token position
+const middleRow = Math.floor(rows / 2);
+let tokenPos1 = { r: middleRow, c: 1 };
+let tokenPos2 = { r: middleRow, c: cols - 2 };
+
 
 const buttons = []; // store buttons for quick access
 
@@ -72,26 +74,26 @@ const deployImagePopupImg = document.getElementById('deploy-image-popup-img');
 
 // --- Row & Column labels code unchanged ---
 const rowLabelsContainer = document.getElementById('row-labels');
-for (let r = 1; r <= rows; r++) {
+const rowLetters = 'ABCDEFGHI';
+for (let r = 0; r < rows; r++) {
   const label = document.createElement('div');
-  label.textContent = r;
-  label.style.height = '40px';         // match grid row height
-  label.style.lineHeight = '40px';     // vertical center text in div
+  label.textContent = rowLetters[r];
+  label.style.height = '40px';
+  label.style.lineHeight = '40px';
   label.style.fontWeight = 'bold';
   label.style.fontSize = '1.0rem';
   label.style.color = '#333';
   label.style.userSelect = 'none';
-  label.style.textAlign = 'center';    // horizontally center number
+  label.style.textAlign = 'center';
   rowLabelsContainer.appendChild(label);
 }
 
 const colLabelsTop = document.getElementById('col-labels-top');
 const colLabelsBottom = document.getElementById('col-labels-bottom');
-const letters = 'ABCDEFGHI';
 
-for (let i = 0; i < cols; i++) {
+for (let i = 1; i <= cols; i++) {
   const labelTop = document.createElement('div');
-  labelTop.textContent = letters[i];
+  labelTop.textContent = i;
   labelTop.style.fontWeight = 'bold';
   labelTop.style.fontSize = '1.0rem';
   labelTop.style.color = '#333';
@@ -100,7 +102,7 @@ for (let i = 0; i < cols; i++) {
   colLabelsTop.appendChild(labelTop);
 
   const labelBottom = document.createElement('div');
-  labelBottom.textContent = letters[i];
+  labelBottom.textContent = i;
   labelBottom.style.fontWeight = 'bold';
   labelBottom.style.fontSize = '1.0rem';
   labelBottom.style.color = '#333';
@@ -115,139 +117,139 @@ const tokenClasses = {
   Arcanist: {
     label: 'A',
     moves: [
-      [-1, -1], [-1, 0], [-1, 1],
-      [0, -1],           [0, 1],
-      [1, -1],  [1, 0],  [1, 1]
+      [1, 1], [0, 1], [-1, 1],
+      [1, 0],           [-1, 0],
+      [1, -1], [0, -1], [-1, -1]
     ]
   },
   Kobold: {
     label: 'K',
     moves: [
-      [-1, -1], [-1, 1]
+      [-1, 1], [1, 1]
     ]
   },
   Skeleton: {
     label: 'S',
     moves: [
-      [-1, 0]
+      [0, 1]
     ]
   },
   Orc: {
     label: 'O',
     moves: [
-      [-1, 0],
-      [1, 0]
+      [0, 1],
+      [0, -1]
     ]
   },
   Human: {
     label: 'H',
     moves: [
-      [-1, 0]
+      [0, 1]
     ],
     captures: [  
-      [-1, 1], [-1, -1]
+      [-1, 1], [1, 1]
     ]
   },
   Gnoll: {
     label: 'G',
     moves: [
-      [-2, 2], [-2, -2]
+      [-2, 2], [2, 2]
     ],
     captures: [ 
-      [0, 1], [0, -1]
+      [1, 0], [-1, 0]
     ]
   },
   Naga: {
     label: 'N',
     moves: [
-      [-1, 1], [-1, -1]
+      [-1, 1], [1, 1]
     ],
     captures: [  
-      [-1, 0]
+      [0, 1]
     ]
   },
   Djendri: {
-    label: 'C',
+    label: 'J',
     moves: [
-      [-1, 0], [0, -1], [0, 1],
+      [0, 1], [1, 0], [-1, 0]
     ],
     captures: [  
-      [-1, 0]
+      [0, 1]
     ]
   },
   Furbolg: {
     label: 'F',
     moves: [
-      [-1, -1], [-1, 0], [-1, 1],
-      [0, -1],           [0, 1],
-      [1, -1],  [1, 0],  [1, 1]
+      [1, 1], [0, 1], [-1, 1],
+      [1, 0],           [-1, 0],
+      [1, -1], [0, -1], [-1, -1]
     ]
   },
   Cavalry: {
     label: 'C',
     moves: [
-      [-2, 0], [-1, 0], [1, 0], [2, 0]
+      [0, 2], [0, 1], [0, -1], [0, -2]
     ]
   },
   Wyvern: {
     label: 'W',
     moves: [
+      [1, -2], [1, 2],
+      [2, -1], [2, 1],
       [-2, -1], [-2, 1],
-      [-1, -2], [-1, 2],
-      [1, -2],  [1, 2],
-      [2, -1],  [2, 1]
+      [-1, -2], [-1, 2]
     ],
     flying: true
   },
   Griffon: {
     label: 'R',
     moves: [
-      [-2, -2], [-2, 2],
-      [2, -2], [2, 2]
+      [2, -2], [2, 2],
+      [-2, -2], [-2, 2]
     ],
     flying: true
   },
   Pegasus: {
     label: 'P',
     moves: [
+      [1, -1], [1, 1],
       [-1, -1], [-1, 1],
-      [1, -1],  [1, 1],
-      [-2, -2], [-2, 2],
-      [2, -2],  [2, 2]
+      [2, -2], [2, 2],
+      [-2, -2], [-2, 2]
     ],
     flying: true
   },
   Dragon: {
     label: 'D',
     moves: [
-      [-2, -2], [-2, -1], [-2, 0], [-2, 1], [-2, 2],
-      [-1, -2], [-1, -1], [-1, 0], [-1, 1], [-1, 2],
-      [0, -2],  [0, -1],           [0, 1],  [0, 2],
-      [1, -2],  [1, -1],  [1, 0],  [1, 1],  [1, 2],
-      [2, -2],  [2, -1],  [2, 0],  [2, 1],  [2, 2]
+      [2, -2], [1, -2], [0, -2], [-1, -2], [-2, -2],
+      [2, -1], [1, -1], [0, -1], [-1, -1], [-2, -1],
+      [2, 0],  [1, 0],           [-1, 0], [-2, 0],
+      [2, 1],  [1, 1],  [0, 1],  [-1, 1], [-2, 1],
+      [2, 2],  [1, 2],  [0, 2],  [-1, 2], [-2, 2]
     ],
     flying: true
   },
   Lang: {
     label: 'L',
     moves: [
-      [-1, 0], [1, 0], [0, -1], [0, 1]
+      [0, 1], [0, -1], [1, 0], [-1, 0]
     ],
     unlimited: true
   },
   Mona: {
     label: 'M',
     moves: [
-      [-1, -1], [-1, 1], [1, -1], [1, 1]
+      [1, 1], [1, -1], [-1, 1], [-1, -1]
     ],
     unlimited: true
   },
   Kathryn: {
     label: 'Q',
     moves: [
-      [-1, -1], [-1, 0], [-1, 1],
-      [0, -1],           [0, 1],
-      [1, -1],  [1, 0],  [1, 1]
+      [1, 1], [0, 1], [-1, 1],
+      [1, 0],           [-1, 0],
+      [1, -1], [0, -1], [-1, -1]
     ],
     unlimited: true
   }
@@ -264,11 +266,11 @@ function currentColor() {
 }
 
 function sanctumPosition(player) {
-  const middleCol = Math.floor(cols / 2);
+  const middleRow = Math.floor(rows / 2);
   if (player === 'red') {
-    return { r: rows - 2, c: middleCol };
+    return { r: middleRow, c: 1 };  // 2nd column (index 1)
   } else {
-    return { r: 1, c: middleCol };
+    return { r: middleRow, c: cols - 2 };  // 2nd last column
   }
 }
 
@@ -338,8 +340,8 @@ function renderDeployBanners() {
 }
 
 function updateStatusBars() {
-  statusTop.innerHTML = `<div class="player-blue">Mana: ${manaBlue} | Mana Regeneration: ${incomeBlue}</div>`;
-  statusBottom.innerHTML = `<div class="player-red">Mana: ${manaRed} | Mana Regeneration: ${incomeRed}</div>`;
+  statusTop.innerHTML = `<div class="player-red">Mana: ${manaRed} | Mana Regeneration: ${incomeRed}</div>`;
+  statusBottom.innerHTML = `<div class="player-blue">Mana: ${manaBlue} | Mana Regeneration: ${incomeBlue}</div>`;
 }
 
 function calculateIncome() {
@@ -392,11 +394,11 @@ function highlightValidMovesByClass(pos, playerClass, tokenColor) {
 
   // Highlight normal moves (empty squares only)
   moves.forEach(([dr, dc]) => {
-    const actualDr = (tokenColor === 'crimson') ? dr : -dr;
+    const actualDc = (tokenColor === 'crimson') ? dc : -dc;
 
     if (unlimited) {
-      const stepR = actualDr === 0 ? 0 : actualDr / Math.abs(actualDr);
-      const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
+      const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+      const stepC = actualDc === 0 ? 0 : actualDc / Math.abs(actualDc);
 
       for (let dist = 1;; dist++) {
         const nr = pos.r + dist * stepR;
@@ -416,8 +418,8 @@ function highlightValidMovesByClass(pos, playerClass, tokenColor) {
     }
 
     if (isFlying) {
-      const nr = pos.r + actualDr;
-      const nc = pos.c + dc;
+      const nr = pos.r + dr;
+      const nc = pos.c + actualDc;
       if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
 
       const btn = buttons[nr * cols + nc];
@@ -427,16 +429,16 @@ function highlightValidMovesByClass(pos, playerClass, tokenColor) {
       return;
     }
 
-    const nr = pos.r + actualDr;
-    const nc = pos.c + dc;
+    const nr = pos.r + dr;
+    const nc = pos.c + actualDc;
     if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
 
-    // New: Check intermediate squares for multi-step moves
-    const stepCount = Math.max(Math.abs(actualDr), Math.abs(dc));
+    // Check intermediate squares for multi-step moves
+    const stepCount = Math.max(Math.abs(dr), Math.abs(actualDc));
     let pathBlocked = false;
     if (stepCount > 1) {
-      const stepR = actualDr / stepCount;
-      const stepC = dc / stepCount;
+      const stepR = dr / stepCount;
+      const stepC = actualDc / stepCount;
       for (let step = 1; step < stepCount; step++) {
         const interR = pos.r + step * stepR;
         const interC = pos.c + step * stepC;
@@ -457,11 +459,11 @@ function highlightValidMovesByClass(pos, playerClass, tokenColor) {
 
   // Highlight capture moves (enemy-occupied squares only)
   captures.forEach(([dr, dc]) => {
-    const actualDr = (tokenColor === 'crimson') ? dr : -dr;
+    const actualDc = (tokenColor === 'crimson') ? dc : -dc;
 
     if (unlimited) {
-      const stepR = actualDr === 0 ? 0 : actualDr / Math.abs(actualDr);
-      const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
+      const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+      const stepC = actualDc === 0 ? 0 : actualDc / Math.abs(actualDc);
 
       for (let dist = 1;; dist++) {
         const nr = pos.r + dist * stepR;
@@ -484,8 +486,8 @@ function highlightValidMovesByClass(pos, playerClass, tokenColor) {
     }
 
     if (isFlying) {
-      const nr = pos.r + actualDr;
-      const nc = pos.c + dc;
+      const nr = pos.r + dr;
+      const nc = pos.c + actualDc;
       if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
       const btn = buttons[nr * cols + nc];
       const occupant = btn.querySelector('.token');
@@ -495,8 +497,8 @@ function highlightValidMovesByClass(pos, playerClass, tokenColor) {
       return;
     }
 
-    const nr = pos.r + actualDr;
-    const nc = pos.c + dc;
+    const nr = pos.r + dr;
+    const nc = pos.c + actualDc;
     if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
 
     const btn = buttons[nr * cols + nc];
@@ -554,8 +556,9 @@ function resetGame() {
   });
 
   // Reset income, sanctums and base tokens
-  const bottomRef = { r: rows - 2, c: Math.floor(cols / 2) };
-  const topRef = { r: 1, c: Math.floor(cols / 2) };
+  const middleRow = Math.floor(rows / 2);
+  const bottomRef = { r: middleRow, c: 1 };
+  const topRef = { r: middleRow, c: cols - 2 };
 
   const bottomBtn = buttons[bottomRef.r * cols + bottomRef.c];
   bottomBtn.capturedBy = 'red';
@@ -662,27 +665,27 @@ function createToken(color, playerClass, title) {
     // Helper function to highlight all squares for given vectors and class
     function addHighlightSquares(vectors, highlightClass) {
       vectors.forEach(([dr, dc]) => {
-        const actualDr = (tokenColor === 'crimson') ? dr : -dr;
-  
+        const actualDc = (tokenColor === 'crimson') ? dc : -dc;
+    
         if (unlimited) {
-          const stepR = actualDr === 0 ? 0 : actualDr / Math.abs(actualDr);
-          const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
-  
+          const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+          const stepC = actualDc === 0 ? 0 : actualDc / Math.abs(actualDc);
+    
           for (let dist = 1;; dist++) {
             const nr = pos.r + dist * stepR;
             const nc = pos.c + dist * stepC;
-  
+    
             if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) break;
-  
+    
             const b = buttons[nr * cols + nc];
             b.classList.add(highlightClass);
           }
         } else {
-          const nr = pos.r + actualDr;
-          const nc = pos.c + dc;
-  
+          const nr = pos.r + dr;
+          const nc = pos.c + actualDc;
+    
           if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
-  
+    
           const b = buttons[nr * cols + nc];
           b.classList.add(highlightClass);
         }
@@ -801,9 +804,9 @@ for (let r = 0; r < rows; r++) {
     btn.textContent = '';
     btn.title = `Row ${r + 1}, Col ${c + 1}`;
 
-    const middleCol = Math.floor(cols / 2);
-    const bottomRef = { r: rows - 2, c: middleCol };
-    const topRef = { r: 1, c: middleCol };
+    const middleRow = Math.floor(rows / 2);
+    const bottomRef = { r: middleRow, c: 1 };
+    const topRef = { r: middleRow, c: cols - 2 };
 
     const isSanctum = (r === bottomRef.r && c === bottomRef.c) || (r === topRef.r && c === topRef.c);
 
@@ -938,11 +941,11 @@ for (let r = 0; r < rows; r++) {
   }
 }
 
-const startRedButton = buttons[(rows - 2) * cols + Math.floor(cols / 2)];
+const startRedButton = buttons[middleRow * cols + 1];
 startRedButton.capturedBy = 'red';
 startRedButton.classList.add('captured-red');
 
-const startBlueButton = buttons[1 * cols + Math.floor(cols / 2)];
+const startBlueButton = buttons[middleRow * cols + (cols - 2)];
 startBlueButton.capturedBy = 'blue';
 startBlueButton.classList.add('captured-blue');
 
